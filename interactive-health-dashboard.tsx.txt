@@ -1,0 +1,199 @@
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+
+const InteractiveHealthDashboard = () => {
+  const [healthData, setHealthData] = useState({
+    age: 30,
+    height: 170,
+    weight: 70,
+    bloodPressure: '120/80',
+    cholesterol: 180,
+    glucose: 85,
+    smoking: 0,
+    alcohol: 2,
+    physicalActivity: 3
+  });
+
+  const [bmi, setBMI] = useState(0);
+  const [riskScore, setRiskScore] = useState(0);
+
+  useEffect(() => {
+    // Calculate BMI
+    const heightInMeters = healthData.height / 100;
+    const bmiValue = healthData.weight / (heightInMeters * heightInMeters);
+    setBMI(bmiValue.toFixed(1));
+
+    // Calculate a mock risk score (this should be replaced with a real algorithm)
+    const mockRiskScore = calculateMockRiskScore(healthData, bmiValue);
+    setRiskScore(mockRiskScore);
+  }, [healthData]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setHealthData(prevData => ({
+      ...prevData,
+      [name]: name === 'bloodPressure' ? value : Number(value)
+    }));
+  };
+
+  const calculateMockRiskScore = (data, bmi) => {
+    // This is a very simplified mock calculation and should be replaced with a real algorithm
+    let score = 0;
+    score += (data.age - 20) * 0.5; // Age factor
+    score += (bmi - 18.5) * 2; // BMI factor
+    const [systolic, diastolic] = data.bloodPressure.split('/').map(Number);
+    score += (systolic - 120) * 0.5 + (diastolic - 80) * 0.5; // Blood pressure factor
+    score += (data.cholesterol - 150) * 0.1; // Cholesterol factor
+    score += (data.glucose - 70) * 0.1; // Glucose factor
+    score += data.smoking * 5; // Smoking factor
+    score += data.alcohol * 2; // Alcohol factor
+    score -= data.physicalActivity * 3; // Physical activity factor (reduces risk)
+
+    return Math.min(Math.max(score, 0), 100).toFixed(1); // Ensure score is between 0 and 100
+  };
+
+  const healthFactors = [
+    { name: 'BMI', value: parseFloat(bmi) },
+    { name: 'Cholesterol', value: healthData.cholesterol },
+    { name: 'Glucose', value: healthData.glucose },
+    { name: 'Physical Activity', value: healthData.physicalActivity * 10 } // Multiplied for better visualization
+  ];
+
+  const lifestyleFactors = [
+    { name: 'Smoking', value: healthData.smoking },
+    { name: 'Alcohol', value: healthData.alcohol },
+    { name: 'Physical Activity', value: healthData.physicalActivity }
+  ];
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-6">Interactive Health Dashboard</h1>
+      
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Input Your Health Data</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="age">Age</Label>
+              <Input id="age" name="age" type="number" value={healthData.age} onChange={handleInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="height">Height (cm)</Label>
+              <Input id="height" name="height" type="number" value={healthData.height} onChange={handleInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="weight">Weight (kg)</Label>
+              <Input id="weight" name="weight" type="number" value={healthData.weight} onChange={handleInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="bloodPressure">Blood Pressure (systolic/diastolic)</Label>
+              <Input id="bloodPressure" name="bloodPressure" type="text" value={healthData.bloodPressure} onChange={handleInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="cholesterol">Cholesterol (mg/dL)</Label>
+              <Input id="cholesterol" name="cholesterol" type="number" value={healthData.cholesterol} onChange={handleInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="glucose">Glucose (mg/dL)</Label>
+              <Input id="glucose" name="glucose" type="number" value={healthData.glucose} onChange={handleInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="smoking">Smoking (cigarettes/day)</Label>
+              <Input id="smoking" name="smoking" type="number" value={healthData.smoking} onChange={handleInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="alcohol">Alcohol (drinks/week)</Label>
+              <Input id="alcohol" name="alcohol" type="number" value={healthData.alcohol} onChange={handleInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="physicalActivity">Physical Activity (hours/week)</Label>
+              <Input id="physicalActivity" name="physicalActivity" type="number" value={healthData.physicalActivity} onChange={handleInputChange} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Health Risk Score</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center">
+              <div className="text-6xl font-bold mb-2">{riskScore}%</div>
+              <div className="text-xl">Estimated Health Risk</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>BMI</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center">
+              <div className="text-6xl font-bold mb-2">{bmi}</div>
+              <div className="text-xl">Body Mass Index</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Health Factors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={healthFactors}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Lifestyle Factors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={lifestyleFactors}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {lifestyleFactors.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default InteractiveHealthDashboard;
